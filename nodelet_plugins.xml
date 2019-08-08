@@ -1,0 +1,11 @@
+<library path="lib/libsafety_from_depth_image">
+
+  <class name="safety_from_depth_image/safety_from_depth_image_nodelet"
+         type="safety_from_depth_image::ScanNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet to take in depth sensor data and compute Wide Field Integration coefficients.
+    </description>
+  </class>
+
+</library>
