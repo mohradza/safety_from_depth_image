@@ -20,12 +20,6 @@ if(cv_bridge_VERSION VERSION_GREATER "1.12.0")
   add_compile_options(-std=c++11)
 endif()
 
-add_message_files(
-	DIRECTORY
-	msg
-	FILES
-)
-
 generate_messages(DEPENDENCIES
         std_msgs
         geometry_msgs

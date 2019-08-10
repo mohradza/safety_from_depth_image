@@ -1,0 +1,36 @@
+<launch>
+      
+  <arg name="manager"             default="camera_fwd/realsense2_camera_manager"/>
+  <arg name="bond"                default="true" />
+  <arg name="respawn"             default="$(arg bond)" />
+
+      <node pkg="nodelet" type="nodelet" output="screen"
+        args="load safety_from_depth_image/safety_from_depth_image_nodelet $(arg manager) $(arg bond)" respawn="$(arg respawn)"
+        name="safety_tower_from_depth_image_nodelet">
+
+        <!-- Remap Subscribed Topics -->
+        <remap from="image_raw" to="camera_fwd/depth/image_rect_raw"/>
+        <remap from="image_info" to="camera_fwd/depth/camera_info"/>
+
+        <!-- Remap Published Topics -->
+        <remap from="safe" to="camera_fwd/depth/image_rect_raw/safe"/>
+        <remap from="min" to="camera_fwd/depth/image_rect_raw/min"/>
+        <remap from="max" to="camera_fwd/depth/image_rect_raw/max"/>
+
+        <!-- Safety Detection Parameters -->
+        <param name="safety_distance_min" type="double" value="0.3"/> <!-- 1.5 (Hole) 0.4 (Tower) -->
+        <param name="safety_distance_max" type="double" value="100"/> <!-- 2.0 (Hole) 100 (Tower) -->
+
+        <!-- Set Values To NAN Outside Range Parameters -->
+        <param name="limit_min_value" type="double" value="0.2" /> <!-- RealSense is inaccurate below 0.20 m -->
+        <param name="limit_max_value" type="double" value="100" /> <!-- Set to arbitrarily high value -->
+
+        <!-- Image Cropping Parameters -->
+        <param name="x_offset" type="int" value="100" />   <!-- cropped 0-640 to 30-610 -->
+        <param name="y_offset" type="int" value="239" />  <!-- cropped 0-480 to 289-291 --> 
+        <param name="width" type="int" value="440" />     <!-- cropped 0-640 to 30-610 -->
+        <param name="height" type="int" value="3" />      <!-- cropped 0-480 to 289-291 --> 
+
+      </node>  
+
+</launch>
