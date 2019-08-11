@@ -15,8 +15,8 @@
             angle_max:  3.14 # M_PI
             angle_increment: 0.0087 # M_PI/360.0
             scan_time: 0.3333
-            range_min: 0.3
-            range_max: 10.0
+            range_min: 0.2
+            range_max: 100
             use_inf: true
 
             # Concurrency level, affects number of pointclouds queued for processing and number of threads used
@@ -26,4 +26,17 @@
             concurrency_level: 0
         </rosparam>
     </node>
+
+    <!-- run pointcloud_to_laserscan node -->
+    <node pkg="safety_from_depth_image" type="scan_min_distance.py" name="scan_min_distance">
+
+        <remap from="status" to="safety/tower_status"/>
+        <remap from="min" to="safety/tower_distance_min"/>
+
+</node>
+
+
+
+
+
 </launch>
