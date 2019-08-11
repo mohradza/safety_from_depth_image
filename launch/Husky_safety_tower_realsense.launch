@@ -13,13 +13,13 @@
         <remap from="image_info" to="camera_fwd/depth/camera_info"/>
 
         <!-- Remap Published Topics -->
-        <remap from="safe" to="camera_fwd/depth/image_rect_raw/safe"/>
-        <remap from="min" to="camera_fwd/depth/image_rect_raw/min"/>
-        <remap from="max" to="camera_fwd/depth/image_rect_raw/max"/>
+        <remap from="status" 	to="safety/tower_status"/> <!-- 0 = Not Close, 1 = Getting Close (Slow Down), 2 = Too Close (Stop) -->
+        <remap from="min" 	to="safety/tower_distance_min"/>
+        <remap from="max" 	to="safety/tower_distance_max"/>
 
         <!-- Safety Detection Parameters -->
-        <param name="safety_distance_min" type="double" value="0.3"/> <!-- 1.5 (Hole) 0.4 (Tower) -->
-        <param name="safety_distance_max" type="double" value="100"/> <!-- 2.0 (Hole) 100 (Tower) -->
+        <param name="getting_close_distance" type="double" value="0.6"/>
+        <param name="too_close_distance" type="double" value="0.3"/>
 
         <!-- Set Values To NAN Outside Range Parameters -->
         <param name="limit_min_value" type="double" value="0.2" /> <!-- RealSense is inaccurate below 0.20 m -->

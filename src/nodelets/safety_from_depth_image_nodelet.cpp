@@ -47,7 +47,7 @@
 #include <iostream>
 #include <random>
 
-#include <std_msgs/Bool.h>
+#include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 
 #include <boost/circular_buffer.hpp>
@@ -91,20 +91,11 @@ namespace safety_from_depth_image
         // Subscriber RealSense depth image
         sub_image_ = it_in_->subscribeCamera("image_raw", queue_size_, &ScanNodelet::imageCb, this, hints);
 
-        // Publisher image boolean
-        pub_image_safe_ = nh.advertise<std_msgs::Bool>("safe", 10);
+        // Publisher image getting_close boolean
+        pub_image_closeness_ = nh.advertise<std_msgs::Int32>("status", 10);
 
         // Publisher image statistic
         pub_image_min_ = nh.advertise<std_msgs::Float32>("min", 10);
-
-        // Publisher image statistic
-        pub_image_max_ = nh.advertise<std_msgs::Float32>("max", 10);
-
-        // Publisher image statistic
-        // pub_image_mean_ = nh.advertise<std_msgs::Float32>("mean", 10);
-
-        // Publisher image statistic
-        // pub_image_median_ = nh.advertise<std_msgs::Float32>("median", 10);
 
     };
 
@@ -119,8 +110,8 @@ namespace safety_from_depth_image
         config_ = config;
 
         // Hole Detection Parameters
-        safety_distance_min_ = config.safety_distance_min;
-        safety_distance_max_ = config.safety_distance_max;
+        getting_close_distance_ = config.getting_close_distance;
+        too_close_distance_ = config.too_close_distance;
 
         // Depth Limit Parameters
         limit_min_value_ = config.limit_min_value;
@@ -192,51 +183,54 @@ namespace safety_from_depth_image
         
         // Set close values to NAN so ignored when calculating statistics
         cropped_float.image.setTo(NAN, cropped_float.image < limit_min_value_);
-        cropped_float.image.setTo(NAN, cropped_float.image > limit_max_value_);
 
         // Calculate min and max values
         double image_min, image_max;
         cv::minMaxLoc(cropped_float.image, &image_min, &image_max);
 
         // For some reason these get set to inf (-inf), reset to NAN so ingored
-        if(isinf(image_min) == 1)
+        if( (isinf(image_min) == 1) || (isnan(image_min) == 1) )
         {
 
-            image_min = NAN;
+            image_min = -1000;
 
         }
-
-        if(isinf(image_max) == 1)
-        {
-
-            image_max = NAN;
-
-        }
-
-        // std::cout << *image_min << std::endl;
-        // std::cout << *image_max << std::endl;
 
         //////////////////////////////
         // Determine Safety Boolean //
         //////////////////////////////
 
         // Set to unsafe by default
-        bool image_safe = 0;
+        int image_closeness = 2;
 
-        // If satisfy safety criteria, set to safe
-        if((image_min > safety_distance_min_) && (image_max < safety_distance_max_) && !(isnan(image_min)) && !(isnan(image_max)))
+        // Set to getting close or too close
+        if( (image_min < too_close_distance_) )
         {
-            image_safe = 1;
+            image_closeness = 2; // Too Close --> Stop
         }
 
-        ////////////////////////////////////
-        // Publish Safety Boolean Message //
-        ////////////////////////////////////
+	else if( (image_min >= too_close_distance_) && (image_min < getting_close_distance_) )
+        {
+            image_closeness = 1; // Getting Close --> Slow Down
+        }
 
-        std_msgs::Bool pub_image_safe_msg;
-        pub_image_safe_msg.data = image_safe;
+	else if( (image_min >= getting_close_distance_) && (image_min < 100) )
+        {
+            image_closeness = 0; // Not Close --> Keep Going
+        }
 
-        pub_image_safe_.publish(pub_image_safe_msg);
+        /////////////////////////////////////
+        // Publish Image Closeness Message //
+        /////////////////////////////////////
+
+        // 0: Not Close
+	// 1: Getting Close
+	// 2: Too Close
+	std_msgs::Int32 image_closeness_msg;
+	
+        image_closeness_msg.data = (long int)image_closeness;
+
+        pub_image_closeness_.publish(image_closeness_msg);
 
         /////////////////////////////////////////
         // Publish Depth Image Minimum Message //
@@ -245,14 +239,6 @@ namespace safety_from_depth_image
         std_msgs::Float32 image_min_msg;
         image_min_msg.data = image_min;
         pub_image_min_.publish(image_min_msg);
-
-        /////////////////////////////////////////
-        // Publish Depth Image Maximum Message //
-        /////////////////////////////////////////
-
-        std_msgs::Float32 image_max_msg;
-        image_max_msg.data = image_max;
-        pub_image_max_.publish(image_max_msg);
 
     }
 

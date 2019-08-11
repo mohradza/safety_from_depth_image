@@ -72,7 +72,7 @@ class ScanNodelet : public nodelet::Nodelet
   ros::NodeHandle nh;
   ros::NodeHandle private_nh;
 
-  ros::Publisher pub_image_safe_;
+  ros::Publisher pub_image_closeness_;
   ros::Publisher pub_image_min_;
   ros::Publisher pub_image_max_;
   ros::Publisher pub_image_mean_;
@@ -100,8 +100,8 @@ class ScanNodelet : public nodelet::Nodelet
                     const sensor_msgs::CameraInfoConstPtr& info_msg);
 
   // Declare parameters
-  float safety_distance_min_;
-  float safety_distance_max_;
+  float getting_close_distance_;
+  float too_close_distance_;
 
   float limit_min_value_;
   float limit_max_value_;
