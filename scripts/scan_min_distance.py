@@ -38,11 +38,11 @@ def callback(msg):
 
     status = 2
 
-    if(minval < 0.3) or numpy.isinf(minval):
+    if(minval < 0.4) or numpy.isinf(minval):
         status = 2
-    elif( (minval >= 0.3) and (minval < 0.6) ):
+    elif( (minval >= 0.4) and (minval < 0.75) ):
         status = 1
-    elif( (minval >= 0.6) and (minval < 100) ):
+    elif( (minval >= 0.75) and (minval < 100) ):
         status = 0
 
     pub_status.publish(Int32(status))
